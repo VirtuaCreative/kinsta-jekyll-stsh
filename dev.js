@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const path = require('path');
 
 app.use(express.static('_site'));
 
@@ -9,5 +8,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(8080, () => {
-	console.log('Jekyll Static Site listening on port http://localhost:8080');
+	console.log('Your Jekyll website is available at http://localhost:8080');
 });

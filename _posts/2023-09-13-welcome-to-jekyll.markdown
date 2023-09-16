@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Welcome to Jekyll!"
+title:  "Welcome to Kinsta!"
 date:   2023-09-13 17:45:15 +0000
 categories: jekyll update
 ---

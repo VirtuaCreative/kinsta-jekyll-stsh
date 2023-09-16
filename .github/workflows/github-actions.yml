@@ -1,0 +1,65 @@
+# Sample workflow for building and deploying a Jekyll site
+name: Deploy Jekyll
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["gh-actions"]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  # Build job
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2' # Not needed with a .ruby-version file
+      - name: Set up Jekyll
+        run: gem install bundler && bundle install
+      - name: Build site
+        # Outputs to the './_site' directory by default
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+      - name: Upload artifact
+        # Automatically uploads an artifact from the './_site' directory by default
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-site
+          path: _site # or path/to/artifact
+  # Deploy job
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Checkout the repo and download the artifacts
+      - uses: actions/checkout@v4
+        with:
+          # Branch to commit and push
+          ref: deploy
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: compiled-site
+          path: _site
+      # Commit and push to the repo
+      - name: Commit and push
+        run: |
+          git config user.name "VirtuaCreative"
+          git config user.email "virtuacreative@users.noreply.github.com"
+          git pull origin deploy
+          git add _site
+          git commit -m "Auto generated from ${GITHUB_SHA::7}"
+          git push --force

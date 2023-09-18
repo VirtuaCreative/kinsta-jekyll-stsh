@@ -1,0 +1,62 @@
+# Sample workflow for building and deploying a Jekyll site with Kinsta StSH
+name: Deploy Jekyll
+on:
+  # Runs the workflow only on pushes to the <main> branch
+  push:
+    branches: ["main"]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  # Build job
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2' # Not needed with a .ruby-version file
+      - name: Set up Jekyll
+        run: gem install bundler && bundle install
+      - name: Build site
+        # Outputs to the './_site' directory
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+      - name: Upload artifact
+        # Automatically uploads an artifact from the '_site' directory
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-site
+          path: _site
+  # Deploy job
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      # Set permissions to write to the repo
+      contents: write
+    steps:
+      # Checkout the repo and download the artifacts
+      - uses: actions/checkout@v4
+        with:
+          # Branch to commit and push the artifacts
+          ref: deploy
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: compiled-site
+          path: _site
+      # Commit and push to the repo's <deploy> branch
+      - name: Commit and push
+      # Replace "User Name" and "username" with your GH org or user name
+        run: |
+          git config user.name "User Name"
+          git config user.email "username@users.noreply.github.com"
+          git pull origin deploy
+          git add _site
+          git commit -m "Auto generated from ${GITHUB_SHA::7}"
+          git push
